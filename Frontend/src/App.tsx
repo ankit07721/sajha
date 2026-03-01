@@ -84,7 +84,7 @@ const App = () => (
 
                   <Route path="/chefs" element={<ChefsPage />} />
                   <Route path="/chef-apply" element={<ChefApply />} />
-                  <Route path="/chef/orders" element={<ChefOrders />} />
+                  
 
                    
                   <Route path="/meal-plans" element={<MealPlans />} /> 
@@ -116,6 +116,7 @@ const App = () => (
                   <Route path="/chef/manage-menu" element={<ChefManageMenu />} />
                   <Route path="/chef/add-item" element={<ChefAddItem />} />
                   <Route path="/chef/edit-item/:itemId" element={<EditItem />} />
+                  <Route path="/chef/orders" element={<ChefOrders />} />
                   </Route>
 
                   <Route element={<AdminRoute />}>

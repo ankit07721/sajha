@@ -30,10 +30,20 @@ interface Subscription {
     landmark: string;
     phone: string;
   };
+
+  
+
+
   plan: {
     name: string;
     features: string[];
     durationDays: number;
+  };
+  assignedChefName?: string;
+  assignedChef?: {
+    firstName: string;
+    lastName: string;
+    chefProfile?: { specialty: string; rating: number; };
   };
   createdAt: string;
 }
@@ -185,6 +195,28 @@ const MySubscription = () => {
         </Card>
 
         {/* Two-column: Preferences + Delivery */}
+        {sub.assignedChefName && (
+  <Card className="mb-6 border-orange-200 bg-orange-50">
+    <CardContent className="flex items-center gap-4 p-5">
+      <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
+        <ChefHat className="h-6 w-6 text-orange-600" />
+      </div>
+      <div>
+        <p className="text-xs text-orange-600 font-semibold uppercase tracking-wide">Your Assigned Chef</p>
+        <p className="text-lg font-black text-orange-800">{sub.assignedChefName} 👩‍🍳</p>
+        {sub.assignedChef?.chefProfile?.specialty && (
+          <p className="text-sm text-orange-600">{sub.assignedChef.chefProfile.specialty}</p>
+        )}
+      </div>
+      {sub.assignedChef?.chefProfile?.rating > 0 && (
+              <div className="ml-auto text-center">
+                <p className="text-xl font-black text-orange-700">⭐ {sub.assignedChef.chefProfile.rating}</p>
+                <p className="text-xs text-orange-500">rating</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <Card>
             <CardHeader className="pb-3">

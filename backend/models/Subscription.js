@@ -69,6 +69,13 @@ const subscriptionSchema = new mongoose.Schema(
       default: "cod",
     },
 
+    assignedChef: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    },
+    assignedChefName: { type: String, default: null },
+
     pausedAt: { type: Date },
     cancelledAt: { type: Date },
     cancelReason: { type: String },

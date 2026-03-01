@@ -76,6 +76,17 @@ router.post('/', authenticateToken, validateOrder, async (req, res) => {
         return res.status(400).json({ success: false, message: `Item is not available.` });
       }
 
+       //  Prevent chef from ordering their own dish
+      if (
+        menuItem.createdBy &&
+        menuItem.createdBy._id.toString() === req.user._id.toString()
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: "You cannot order your own dishes!"
+        });
+      }
+
       const currentPrice = menuItem.getCurrentPrice ? menuItem.getCurrentPrice() : menuItem.price;
       const itemSubtotal = currentPrice * item.quantity;
       subtotal += itemSubtotal;

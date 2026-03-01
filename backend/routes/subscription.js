@@ -237,4 +237,4 @@ router.post("/admin/seed-plans", authenticateToken, authorizeRole("admin"), asyn
   }
 });
 
-module.exports = router;
+module.exports = router; 

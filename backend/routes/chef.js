@@ -19,6 +19,8 @@ const formatChef = (user) => ({
   experience: user.chefProfile?.experience || "",
   isActive: user.isActive,
   applicationStatus: user.chefProfile?.applicationStatus,
+  kitchenLat: user.location?.latitude  || null,
+  kitchenLng: user.location?.longitude || null,
 });
 
 // GET /api/chefs — public, only approved chefs

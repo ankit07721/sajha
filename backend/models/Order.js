@@ -1,4 +1,4 @@
-
+// backend/models/Order.js
 const mongoose = require('mongoose');
 
 const generateOrderNumber = () => {

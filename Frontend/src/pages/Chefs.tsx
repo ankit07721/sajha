@@ -1,5 +1,5 @@
 // Frontend/src/pages/Chefs.tsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Star, MapPin, ChefHat, ShoppingCart, Clock, Flame, Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -21,6 +21,9 @@ interface Chef {
   totalOrders: number;
   badges: string[];
   isActive: boolean;
+  kitchenLat?: number;
+  kitchenLng?: number;
+  distanceKm?: number;
 }
 
 const fetchChefs = async (): Promise<Chef[]> => {
@@ -51,8 +54,14 @@ function ChefCard({ chef, onClick }: { chef: Chef; onClick: () => void }) {
         <h3 className="text-lg font-bold text-foreground">{chef.name}</h3>
         <p className="text-sm text-primary font-semibold mt-0.5">{chef.specialty}</p>
         <div className="flex items-center gap-1 mt-2 text-muted-foreground">
-          <MapPin className="h-3 w-3" /><span className="text-xs">{chef.location}</span>
-        </div>
+            <MapPin className="h-3 w-3" />
+            <span className="text-xs">{chef.location}</span>
+            {chef.distanceKm !== undefined && (
+              <span className="ml-2 text-xs bg-green-50 text-green-700 border border-green-200 rounded-full px-2 py-0.5">
+                📍 {chef.distanceKm}km away
+              </span>
+            )}
+          </div>
         {chef.bio && <p className="text-xs text-muted-foreground mt-2 line-clamp-2">{chef.bio}</p>}
         {chef.badges?.length > 0 && (
           <div className="flex gap-1 flex-wrap mt-3">
@@ -193,8 +202,33 @@ function ChefProfile({ chefId, onBack }: { chefId: string; onBack: () => void })
 // ── Main Page ─────────────────────────────────────────────────────────────────
 const ChefsPage = () => {
   const [selectedChefId, setSelectedChefId] = useState<string | null>(null);
+  const [customerCoords, setCustomerCoords] = useState<{lat: number, lng: number} | null>(null);
+
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition(
+      pos => setCustomerCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => console.log("Location denied")
+    );
+  }, []);
+
   const { data: chefs, isLoading } = useQuery({ queryKey: ["chefs"], queryFn: fetchChefs });
 
+  const chefsWithDistance = chefs?.map(chef => {
+    if (!customerCoords || !chef.kitchenLat || !chef.kitchenLng) return chef;
+    const R = 6371;
+    const dLat = (chef.kitchenLat - customerCoords.lat) * Math.PI / 180;
+    const dLon = (chef.kitchenLng - customerCoords.lng) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(customerCoords.lat * Math.PI/180) *
+              Math.cos(chef.kitchenLat * Math.PI/180) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const dist = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return { ...chef, distanceKm: Math.round(dist * 10) / 10 };
+  }) ?? [];
+
+  const sortedChefs = [...chefsWithDistance].sort((a, b) => 
+    (a.distanceKm ?? 999) - (b.distanceKm ?? 999)
+  );
   if (selectedChefId) {
     return (
       <div className="container mx-auto py-10 px-4 animate-fade-in">
@@ -226,7 +260,7 @@ const ChefsPage = () => {
 
         {chefs && chefs.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {chefs.map(chef => <ChefCard key={chef._id} chef={chef} onClick={() => setSelectedChefId(chef._id)} />)}
+            {sortedChefs.map(chef => <ChefCard key={chef._id} chef={chef} onClick={() => setSelectedChefId(chef._id)} />)}
           </div>
         )}
       </div>

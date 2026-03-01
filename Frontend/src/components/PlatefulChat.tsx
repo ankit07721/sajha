@@ -244,7 +244,7 @@ function Bubble({ msg, onAdd }: { msg: Msg; onAdd: (id: string) => void }) {
   return (
     <div style={{ display:"flex", justifyContent:isUser?"flex-end":"flex-start", marginBottom:12 }}>
       <div style={{ maxWidth:"86%" }}>
-        {!isUser && <div style={{ fontSize:9, color:"#aaa", marginBottom:3, marginLeft:2 }}>Plateful AI · NLP+RAG</div>}
+        {!isUser && <div style={{ fontSize:9, color:"#aaa", marginBottom:3, marginLeft:2 }}>Plateful Assistant</div>}
         <div style={{ padding:"10px 14px", borderRadius:isUser?"18px 18px 4px 18px":"18px 18px 18px 4px", background:isUser?"linear-gradient(135deg,#f97316,#ea580c)":"#fff", color:isUser?"#fff":"#1a1a1a", fontSize:13, lineHeight:1.55, boxShadow:"0 2px 8px rgba(0,0,0,0.06)", border:isUser?"none":"1.5px solid #f0f0f0" }}>
           {msg.text.split("\n").map((line, i) => <span key={i}>{bold(line)}<br /></span>)}
         </div>
@@ -266,7 +266,7 @@ export default function PlatefulChat() {
   const [open, setOpen] = useState(false);
   const [msgs, setMsgs] = useState<Msg[]>([{
     id: "w", role: "bot",
-    text: `${timeCtx().greet} I'm **Plateful Assistant** 🍽️\n\nPowered by **NLP + RAG + Trie Algorithm**\n\nType **help** to see what I can do, or just ask me anything!`,
+    text: `${timeCtx().greet} I'm **Plateful Assistant** 🍽️\n\nType **help** to see what I can do, or just ask me anything!`,
     time: new Date(),
   }]);
   const [input, setInput] = useState("");

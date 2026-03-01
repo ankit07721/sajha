@@ -38,6 +38,10 @@ interface SubscribePayload {
     phone: string;
   };
   paymentMethod: "cod";
+  deliveryCoords?: {
+    latitude: number;
+    longitude: number;
+  } | null ;
 }
 
 // ── Fetch plans from your API ─────────────────────────────────────────────────
@@ -149,6 +153,7 @@ function SubscribeModal({
   onSuccess: () => void;
 }) {
   const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [deliveryCoords, setDeliveryCoords] = useState<{latitude: number, longitude: number} | null>(null);
   const [prefs, setPrefs] = useState({
     mealType: "both" as "veg" | "non-veg" | "both",
     mealTime: "both" as "lunch" | "dinner" | "both",
@@ -172,7 +177,7 @@ function SubscribeModal({
     if (!addr.street || !addr.city || !addr.phone) {
       return toast.error("Please fill in all delivery details.");
     }
-    subscribe({ planId: plan._id, preferences: prefs, deliveryAddress: addr, paymentMethod: "cod" });
+    subscribe({ planId: plan._id, preferences: prefs, deliveryAddress: addr, paymentMethod: "cod", deliveryCoords });
   };
 
   const totalPrice = plan.durationDays >= 30
@@ -263,6 +268,34 @@ function SubscribeModal({
           {step === 2 && (
             <div className="space-y-4 animate-fade-in">
               <h3 className="font-bold text-lg">Delivery Address</h3>
+
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (!navigator.geolocation) {
+                    toast.error("Geolocation not supported");
+                    return;
+                  }
+                  navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                      setDeliveryCoords({ 
+                        latitude: pos.coords.latitude, 
+                        longitude: pos.coords.longitude 
+                      });
+                      toast.success(`📍 Location detected! (${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)})`);
+                    },
+                    () => toast.error("Could not detect location. Please allow location access.")
+                  );
+                }}
+>
+  📍 Detect My Location (for chef assignment)
+</Button>
+
+              
 
               {[
                 { key: "street", label: "Street Address", placeholder: "e.g. Thamel Marg, House 12" },
@@ -441,4 +474,4 @@ const MealPlans = () => {
   );
 };
 
-export default MealPlans;
+export default MealPlans;  
