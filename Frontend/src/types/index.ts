@@ -34,6 +34,9 @@ export interface MenuItem {
   isAvailable: boolean;
   preparationTime: number;
   ingredients?: string[];
+  chefName?: string;
+  chefId?: string;
+  chefDistance?: number;
   nutritionInfo?: {
     calories?: number;
     protein?: number;
@@ -55,6 +58,7 @@ export interface MenuItem {
   rating: {
     average: number;
     count: number;
+    bayesianScore?: number;
   };
 }
 
@@ -91,6 +95,7 @@ export interface Order {
     email: string;
     phone: string;
     address: string;
+    coordinates? : { latitude: number; longitude: number };
   };
   items: {
     menuItem: MenuItem;
@@ -98,6 +103,8 @@ export interface Order {
     price: number;
     quantity: number;
     subtotal: number;
+    chef? : string;
+    chefName?: string;
   }[];
   pricing: {
     subtotal: number;
@@ -118,6 +125,10 @@ export interface Order {
   paymentMethod: "esewa" | "khalti" | "cod";
   createdAt: string;
   estimatedDeliveryTime: string;
+  deliveryDistance?: number;
+  specialInstructions?: string;
+  scheduledFor?: { date: string; time: string };
+  assignedChef?: { _id: string; firstName: string; lastName: string; chefProfile?: any };
   trackingInfo: any;
 }
 

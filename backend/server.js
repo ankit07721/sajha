@@ -6,6 +6,8 @@ const morgan = require("morgan");
 const rateLimit = require("express-rate-limit");
 const mongoose = require("mongoose");
 const connectDB = require("./config/mongo.config.js");
+const Subscription = require('./models/Subscription');
+
 
 require("dotenv").config();
 
@@ -113,7 +115,16 @@ const startServer = async () => {
     console.log(`Server running on port http://localhost:${PORT}`);
     console.log(`Environment: ${process.env.NODE_ENV}`);
   });
+
+  const expired = await Subscription.expireOverdue();
+  if (expired > 0) console.log(`[STARTUP] Expired ${expired} overdue subscriptions`);
+
+  // Run every hour
+  setInterval(async () => {
+    await Subscription.expireOverdue();
+  }, 3600000);
 };
+
 
 startServer();
 

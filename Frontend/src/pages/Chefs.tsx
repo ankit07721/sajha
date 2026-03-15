@@ -36,7 +36,6 @@ const fetchChefWithMenu = async (chefId: string): Promise<{ chef: Chef; menuItem
   return { chef: data.chef, menuItems: data.menuItems };
 };
 
-// ── Chef Card ─────────────────────────────────────────────────────────────────
 function ChefCard({ chef, onClick }: { chef: Chef; onClick: () => void }) {
   return (
     <Card className="overflow-hidden cursor-pointer hover-lift transition-all duration-300 hover:border-primary hover:shadow-lg" onClick={onClick}>
@@ -48,20 +47,20 @@ function ChefCard({ chef, onClick }: { chef: Chef; onClick: () => void }) {
         <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-sm text-white rounded-full px-3 py-1 text-xs font-bold flex items-center gap-1">
           <Star className="h-3 w-3 text-yellow-400 fill-current" />{chef.rating.toFixed(1)}
         </div>
-        <div className="absolute top-3 left-3 bg-green-500 text-white rounded-full px-2 py-0.5 text-xs font-bold">🟢 Active</div>
+        <div className="absolute top-3 left-3 bg-green-500 text-white rounded-full px-2 py-0.5 text-xs font-bold">Active</div>
       </div>
       <CardContent className="p-4">
         <h3 className="text-lg font-bold text-foreground">{chef.name}</h3>
         <p className="text-sm text-primary font-semibold mt-0.5">{chef.specialty}</p>
-        <div className="flex items-center gap-1 mt-2 text-muted-foreground">
-            <MapPin className="h-3 w-3" />
-            <span className="text-xs">{chef.location}</span>
-            {chef.distanceKm !== undefined && (
-              <span className="ml-2 text-xs bg-green-50 text-green-700 border border-green-200 rounded-full px-2 py-0.5">
-                📍 {chef.distanceKm}km away
-              </span>
-            )}
-          </div>
+        <div className="flex items-center gap-1 mt-2 text-muted-foreground flex-wrap">
+          <MapPin className="h-3 w-3" />
+          <span className="text-xs">{chef.location}</span>
+          {chef.distanceKm !== undefined && (
+            <span className="ml-2 text-xs bg-green-50 text-green-700 border border-green-200 rounded-full px-2 py-0.5">
+              📍 {chef.distanceKm}km away
+            </span>
+          )}
+        </div>
         {chef.bio && <p className="text-xs text-muted-foreground mt-2 line-clamp-2">{chef.bio}</p>}
         {chef.badges?.length > 0 && (
           <div className="flex gap-1 flex-wrap mt-3">
@@ -71,7 +70,8 @@ function ChefCard({ chef, onClick }: { chef: Chef; onClick: () => void }) {
           </div>
         )}
         <div className="flex items-center justify-between mt-4 pt-3 border-t">
-          <span className="text-xs text-muted-foreground">🍽️ {chef.totalOrders} orders</span>
+          {/* ✅ FIX: Removed emoji that was showing as broken box */}
+          <span className="text-xs text-muted-foreground">{chef.totalOrders} orders</span>
           <Button size="sm" className="gradient-primary text-xs">View Menu →</Button>
         </div>
       </CardContent>
@@ -79,12 +79,13 @@ function ChefCard({ chef, onClick }: { chef: Chef; onClick: () => void }) {
   );
 }
 
-// ── Menu Item Card ─────────────────────────────────────────────────────────────
 function MenuItemCard({ item }: { item: MenuItem }) {
   const { addToCart } = useCart();
   const spiceBadge: Record<string, string> = {
-    mild: "bg-green-100 text-green-700", medium: "bg-yellow-100 text-yellow-700",
-    hot: "bg-red-100 text-red-700", "extra-hot": "bg-purple-100 text-purple-700",
+    mild: "bg-green-100 text-green-700",
+    medium: "bg-yellow-100 text-yellow-700",
+    hot: "bg-red-100 text-red-700",
+    "extra-hot": "bg-purple-100 text-purple-700",
   };
   return (
     <Card className="overflow-hidden hover-lift transition-all duration-200 hover:border-primary">
@@ -117,7 +118,8 @@ function MenuItemCard({ item }: { item: MenuItem }) {
         )}
         <div className="flex items-center justify-between mt-3">
           <span className="text-base font-black text-primary">NRs {item.price}</span>
-          <Button size="sm" className="gradient-primary h-8 text-xs" onClick={() => { addToCart({ menuItemId: item._id, quantity: 1 }); toast.success(`${item.name} added to cart!`); }}>
+          <Button size="sm" className="gradient-primary h-8 text-xs"
+            onClick={() => { addToCart({ menuItemId: item._id, quantity: 1 }); toast.success(`${item.name} added to cart!`); }}>
             <ShoppingCart className="h-3 w-3 mr-1" />Add
           </Button>
         </div>
@@ -126,7 +128,6 @@ function MenuItemCard({ item }: { item: MenuItem }) {
   );
 }
 
-// ── Chef Profile ──────────────────────────────────────────────────────────────
 function ChefProfile({ chefId, onBack }: { chefId: string; onBack: () => void }) {
   const [filter, setFilter] = useState<"all" | "veg" | "non-veg" | "dessert" | "beverage">("all");
   const { data, isLoading } = useQuery({
@@ -148,7 +149,6 @@ function ChefProfile({ chefId, onBack }: { chefId: string; onBack: () => void })
         ← Back to Chefs
       </button>
 
-      {/* Hero */}
       <div className="relative rounded-2xl overflow-hidden mb-8 bg-gradient-to-r from-stone-900 via-orange-950 to-stone-900">
         <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "radial-gradient(circle at 20% 50%, #f97316 0%, transparent 60%), radial-gradient(circle at 80% 50%, #ea580c 0%, transparent 60%)" }} />
         <div className="relative flex items-center gap-6 p-8 flex-wrap">
@@ -160,7 +160,11 @@ function ChefProfile({ chefId, onBack }: { chefId: string; onBack: () => void })
             <p className="text-primary font-bold mt-1">{chef.specialty}</p>
             <p className="text-white/70 text-sm mt-1 flex items-center gap-1"><MapPin className="h-3 w-3" />{chef.location}</p>
             <div className="flex gap-6 mt-4">
-              {[{ label: "Rating", val: chef.rating.toFixed(1), icon: "⭐" }, { label: "Orders", val: chef.totalOrders, icon: "🍽️" }, { label: "Dishes", val: menuItems.length, icon: "📋" }].map(s => (
+              {[
+                { label: "Rating", val: chef.rating.toFixed(1), icon: "⭐" },
+                { label: "Orders", val: chef.totalOrders, icon: "🍽️" },
+                { label: "Dishes", val: menuItems.length, icon: "📋" },
+              ].map(s => (
                 <div key={s.label} className="text-center">
                   <div className="text-xl font-black text-primary">{s.icon} {s.val}</div>
                   <div className="text-xs text-white/60 mt-0.5">{s.label}</div>
@@ -174,22 +178,24 @@ function ChefProfile({ chefId, onBack }: { chefId: string; onBack: () => void })
             </div>
           )}
         </div>
-        {chef.bio && <div className="px-8 pb-6 text-white/80 text-sm italic border-t border-white/10 pt-4">💬 "{chef.bio}"</div>}
+        {chef.bio && <div className="px-8 pb-6 text-white/80 text-sm italic border-t border-white/10 pt-4">"{chef.bio}"</div>}
       </div>
 
-      {/* Filter */}
       <div className="flex items-center gap-2 mb-6 flex-wrap">
         <span className="text-sm font-bold mr-2">Filter:</span>
         {cats.map(cat => (
-          <Button key={cat} variant={filter === cat ? "default" : "outline"} size="sm" onClick={() => setFilter(cat)} className={filter === cat ? "gradient-primary" : ""}>
-            {cat === "all" ? "🍽️ All" : cat === "veg" ? "🌿 Veg" : cat === "non-veg" ? "🍗 Non-Veg" : cat === "dessert" ? "🍮 Dessert" : "☕ Beverage"}
+          <Button key={cat} variant={filter === cat ? "default" : "outline"} size="sm"
+            onClick={() => setFilter(cat)} className={filter === cat ? "gradient-primary" : ""}>
+            {cat === "all" ? "All" : cat === "veg" ? "🌿 Veg" : cat === "non-veg" ? "🍗 Non-Veg" : cat === "dessert" ? "🍮 Dessert" : "☕ Beverage"}
           </Button>
         ))}
       </div>
 
-      {/* Grid */}
       {filtered.length === 0 ? (
-        <div className="text-center py-16 text-muted-foreground"><ChefHat className="h-12 w-12 mx-auto mb-4 opacity-30" /><p>No {filter} items from this chef yet.</p></div>
+        <div className="text-center py-16 text-muted-foreground">
+          <ChefHat className="h-12 w-12 mx-auto mb-4 opacity-30" />
+          <p>No {filter} items from this chef yet.</p>
+        </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {filtered.map(item => <MenuItemCard key={item._id} item={item} />)}
@@ -199,10 +205,9 @@ function ChefProfile({ chefId, onBack }: { chefId: string; onBack: () => void })
   );
 }
 
-// ── Main Page ─────────────────────────────────────────────────────────────────
 const ChefsPage = () => {
   const [selectedChefId, setSelectedChefId] = useState<string | null>(null);
-  const [customerCoords, setCustomerCoords] = useState<{lat: number, lng: number} | null>(null);
+  const [customerCoords, setCustomerCoords] = useState<{ lat: number; lng: number } | null>(null);
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
@@ -218,17 +223,18 @@ const ChefsPage = () => {
     const R = 6371;
     const dLat = (chef.kitchenLat - customerCoords.lat) * Math.PI / 180;
     const dLon = (chef.kitchenLng - customerCoords.lng) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(customerCoords.lat * Math.PI/180) *
-              Math.cos(chef.kitchenLat * Math.PI/180) *
-              Math.sin(dLon/2) * Math.sin(dLon/2);
-    const dist = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(customerCoords.lat * Math.PI / 180) *
+              Math.cos(chef.kitchenLat * Math.PI / 180) *
+              Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const dist = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return { ...chef, distanceKm: Math.round(dist * 10) / 10 };
   }) ?? [];
 
-  const sortedChefs = [...chefsWithDistance].sort((a, b) => 
+  const sortedChefs = [...chefsWithDistance].sort((a, b) =>
     (a.distanceKm ?? 999) - (b.distanceKm ?? 999)
   );
+
   if (selectedChefId) {
     return (
       <div className="container mx-auto py-10 px-4 animate-fade-in">
@@ -245,10 +251,17 @@ const ChefsPage = () => {
             <ChefHat className="h-8 w-8 text-primary" />
           </div>
           <h1 className="text-4xl font-black text-foreground">Meet Our Home Cooks</h1>
-          <p className="text-muted-foreground mt-3 text-lg max-w-lg mx-auto">Real people, real kitchens, real passion — every dish made with love 🍽️</p>
+          {/* ✅ FIX: Removed broken emoji from subtitle */}
+          <p className="text-muted-foreground mt-3 text-lg max-w-lg mx-auto">
+            Real people, real kitchens, real passion — every dish made with love
+          </p>
         </div>
 
-        {isLoading && <div className="flex justify-center items-center h-48"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>}
+        {isLoading && (
+          <div className="flex justify-center items-center h-48">
+            <Loader2 className="h-10 w-10 animate-spin text-primary" />
+          </div>
+        )}
 
         {!isLoading && (!chefs || chefs.length === 0) && (
           <div className="text-center py-20 text-muted-foreground">
@@ -260,7 +273,9 @@ const ChefsPage = () => {
 
         {chefs && chefs.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {sortedChefs.map(chef => <ChefCard key={chef._id} chef={chef} onClick={() => setSelectedChefId(chef._id)} />)}
+            {sortedChefs.map(chef => (
+              <ChefCard key={chef._id} chef={chef} onClick={() => setSelectedChefId(chef._id)} />
+            ))}
           </div>
         )}
       </div>
@@ -268,4 +283,4 @@ const ChefsPage = () => {
   );
 };
 
-export default ChefsPage; 
+export default ChefsPage;

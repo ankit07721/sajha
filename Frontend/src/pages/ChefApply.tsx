@@ -24,8 +24,9 @@ const chefSchema = z.object({
   address: z.object({
     street:  z.string().min(3, "Street address is required."),
     city:    z.string().min(2, "City is required."),
-    state:   z.string().min(2, "State is required."),
-    zipCode: z.string().min(4, "ZIP code is required."),
+    state:   z.string().min(2, "Province is required."),
+    // ✅ FIX: Nepal uses Ward No, not ZIP code
+    zipCode: z.string().min(1, "Ward No. is required."),
   }),
   bio:              z.string().min(20, "Please write at least 20 characters.").max(500),
   specialty:        z.string().min(3, "Please enter your food specialty."),
@@ -83,7 +84,6 @@ const ChefApply = () => {
     },
   });
 
-  // ── GPS Auto-detect ────────────────────────────────────────────────────────
   const handleUseMyLocation = () => {
     if (!navigator.geolocation) {
       toast.error("Geolocation not supported by your browser.");
@@ -145,7 +145,7 @@ const ChefApply = () => {
       <div className="w-full max-w-lg">
         <div className="text-center mb-8">
           <Link to="/" className="inline-block">
-            <img src="/lovable-uploads/3eb505a2-d097-4c6c-b32c-4526e0a2aed2.png" alt="Plateful" className="h-16 w-auto mx-auto" />
+            <img src="/lovable-uploads/3eb505a2-d097-4c6c-b32c-4526e0a2aed2.png" alt="Sajha Chulo" className="h-16 w-auto mx-auto" />
           </Link>
         </div>
 
@@ -170,7 +170,7 @@ const ChefApply = () => {
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 
-                {/* ── STEP 1 ── */}
+                {/* STEP 1 */}
                 {step === 1 && (
                   <>
                     <div className="grid grid-cols-2 gap-4">
@@ -209,24 +209,30 @@ const ChefApply = () => {
                       </FormItem>
                     )} />
 
+                    {/* ✅ FIX: Changed ZipCode label to Ward No. */}
                     <div className="grid grid-cols-3 gap-3">
-                      {(["address.city", "address.state", "address.zipCode"] as const).map(name => (
-                        <FormField key={name} control={form.control} name={name} render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>{name.split(".")[1].charAt(0).toUpperCase() + name.split(".")[1].slice(1)}</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder={
-                                  name === "address.city" ? "Butwal" :
-                                  name === "address.state" ? "Lumbini" : "32900"
-                                }
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )} />
-                      ))}
+                      <FormField control={form.control} name="address.city" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>City</FormLabel>
+                          <FormControl><Input placeholder="Butwal" {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                      <FormField control={form.control} name="address.state" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Province</FormLabel>
+                          <FormControl><Input placeholder="Lumbini" {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                      <FormField control={form.control} name="address.zipCode" render={({ field }) => (
+                        <FormItem>
+                          {/* ✅ FIX: Nepal-appropriate label */}
+                          <FormLabel>Ward No.</FormLabel>
+                          <FormControl><Input placeholder="e.g. 11" {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
                     </div>
 
                     <FormField control={form.control} name="password" render={({ field }) => (
@@ -235,7 +241,8 @@ const ChefApply = () => {
                         <FormControl>
                           <div className="relative">
                             <Input type={showPassword ? "text" : "password"} placeholder="Min 6 characters" {...field} />
-                            <button type="button" onClick={() => setShowPassword(p => !p)} className="absolute right-3 top-1/2 -translate-y-1/2">
+                            <button type="button" onClick={() => setShowPassword(p => !p)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2">
                               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                             </button>
                           </div>
@@ -250,7 +257,7 @@ const ChefApply = () => {
                   </>
                 )}
 
-                {/* ── STEP 2 ── */}
+                {/* STEP 2 */}
                 {step === 2 && (
                   <>
                     <FormField control={form.control} name="bio" render={({ field }) => (
@@ -300,25 +307,18 @@ const ChefApply = () => {
                       </FormItem>
                     )} />
 
-                    {/* ── KITCHEN LOCATION SECTION ── */}
+                    {/* Kitchen Location */}
                     <div className="rounded-xl border border-orange-200 bg-orange-50 p-4 space-y-3">
                       <div className="flex items-center gap-2">
                         <MapPin className="h-4 w-4 text-orange-600" />
                         <p className="text-sm font-bold text-orange-800">Kitchen Location *</p>
                       </div>
                       <p className="text-xs text-orange-600">
-                        Customers within 7km of your kitchen will see your dishes. This ensures food quality and timely delivery!
+                        Customers within 7km of your kitchen will see your dishes.
                       </p>
-
-                      {/* GPS Button */}
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
+                      <Button type="button" variant="outline" size="sm"
                         className="w-full border-orange-300 text-orange-700 hover:bg-orange-100"
-                        onClick={handleUseMyLocation}
-                        disabled={isGettingLocation}
-                      >
+                        onClick={handleUseMyLocation} disabled={isGettingLocation}>
                         {isGettingLocation
                           ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />Detecting location...</>
                           : <><Navigation className="h-4 w-4 mr-2" />Use My Current Location</>
@@ -327,7 +327,6 @@ const ChefApply = () => {
 
                       <div className="text-center text-xs text-muted-foreground">— or enter manually —</div>
 
-                      {/* Manual Input */}
                       <div className="grid grid-cols-2 gap-3">
                         <FormField control={form.control} name="kitchenLatitude" render={({ field }) => (
                           <FormItem>
@@ -346,15 +345,14 @@ const ChefApply = () => {
                       </div>
 
                       <p className="text-xs text-muted-foreground">
-                        💡 <strong>How to get coordinates:</strong> Open Google Maps → long press your kitchen → copy the numbers shown at top (e.g. 27.6937, 83.4532)
+                        💡 <strong>How to find coordinates:</strong> Open Google Maps → long press your kitchen location → copy the numbers shown at top.
                       </p>
 
-                      {/* Confirmed location display */}
                       {form.watch("kitchenLatitude") && form.watch("kitchenLongitude") && (
                         <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg p-2">
                           <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
                           <p className="text-xs text-green-700 font-medium">
-                            📍 Kitchen location set: ({form.watch("kitchenLatitude")}, {form.watch("kitchenLongitude")})
+                            Kitchen set: ({form.watch("kitchenLatitude")}, {form.watch("kitchenLongitude")})
                           </p>
                         </div>
                       )}
@@ -366,7 +364,7 @@ const ChefApply = () => {
                           <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                         </FormControl>
                         <FormLabel className="font-normal text-sm leading-relaxed">
-                          I agree to Plateful's <Link to="/terms" className="text-primary hover:underline">Terms & Conditions</Link> and confirm all information is accurate.
+                          I agree to Sajha Chulo's Terms & Conditions and confirm all information is accurate.
                         </FormLabel>
                         <FormMessage />
                       </FormItem>
@@ -397,4 +395,4 @@ const ChefApply = () => {
   );
 };
 
-export default ChefApply;     
+export default ChefApply;

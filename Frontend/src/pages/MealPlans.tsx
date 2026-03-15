@@ -1,3 +1,4 @@
+// Frontend/src/pages/MealPlans.tsx
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -10,7 +11,6 @@ import api from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 
-// ── Types ─────────────────────────────────────────────────────────────────────
 interface TiffinPlan {
   _id: string;
   name: string;
@@ -38,36 +38,23 @@ interface SubscribePayload {
     phone: string;
   };
   paymentMethod: "cod";
-  deliveryCoords?: {
-    latitude: number;
-    longitude: number;
-  } | null ;
+  deliveryCoords?: { latitude: number; longitude: number } | null;
 }
 
-// ── Fetch plans from your API ─────────────────────────────────────────────────
 const fetchPlans = async (): Promise<TiffinPlan[]> => {
   const { data } = await api.get("/subscriptions/plans");
   return data.data;
 };
 
-// ── Plan Card ─────────────────────────────────────────────────────────────────
-function PlanCard({
-  plan,
-  onSelect,
-}: {
-  plan: TiffinPlan;
-  onSelect: (plan: TiffinPlan) => void;
-}) {
+// ✅ FIX: Sort plans in correct display order: Weekly → Monthly → Special Diet
+const PLAN_ORDER = ["weekly", "monthly", "special-diet"];
+
+function PlanCard({ plan, onSelect }: { plan: TiffinPlan; onSelect: (plan: TiffinPlan) => void }) {
   const badgeColor: Record<string, string> = {
     Popular: "bg-orange-500",
     "Best Value": "bg-gray-900",
     Health: "bg-blue-500",
   };
-
-  const isMonthly = plan.durationDays >= 30;
-  const totalPrice = isMonthly
-    ? plan.pricePerWeek
-    : plan.pricePerWeek;
 
   return (
     <Card
@@ -76,10 +63,8 @@ function PlanCard({
       }`}
       onClick={() => onSelect(plan)}
     >
-      {/* Top color bar */}
       <div className={`h-1.5 w-full ${plan.badge === "Best Value" ? "bg-gray-900" : plan.badge === "Health" ? "bg-blue-500" : "bg-primary"}`} />
 
-      {/* Badge */}
       {plan.badge && (
         <div className={`absolute top-4 right-4 ${badgeColor[plan.badge] ?? "bg-primary"} text-white text-xs font-bold px-3 py-1 rounded-full`}>
           {plan.badge}
@@ -87,10 +72,7 @@ function PlanCard({
       )}
 
       <CardContent className="p-6">
-        {/* Icon */}
-        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-4 ${
-          plan.badge === "Health" ? "bg-blue-50" : "bg-orange-50"
-        }`}>
+        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-4 ${plan.badge === "Health" ? "bg-blue-50" : "bg-orange-50"}`}>
           {plan.badge === "Health"
             ? <span className="text-3xl">🥗</span>
             : plan.durationDays >= 30
@@ -102,10 +84,9 @@ function PlanCard({
         <h3 className="text-xl font-black text-foreground mb-2">{plan.name}</h3>
         <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{plan.description}</p>
 
-        {/* Price */}
         <div className="mb-5">
           <span className="text-2xl font-black text-primary">
-            From Rs. {totalPrice.toLocaleString()}
+            From Rs. {plan.pricePerWeek.toLocaleString()}
           </span>
           <span className="text-muted-foreground text-sm">
             /{plan.durationDays >= 30 ? "month" : "week"}
@@ -119,7 +100,6 @@ function PlanCard({
 
         <Separator className="mb-4" />
 
-        {/* Features */}
         <ul className="space-y-2 mb-6">
           {plan.features.map((f) => (
             <li key={f} className="flex items-center gap-2 text-sm text-foreground">
@@ -130,9 +110,7 @@ function PlanCard({
         </ul>
 
         <Button
-          className={`w-full font-bold ${
-            plan.badge === "Best Value" ? "bg-gray-900 hover:bg-gray-800 text-white" : "gradient-primary"
-          }`}
+          className={`w-full font-bold ${plan.badge === "Best Value" ? "bg-gray-900 hover:bg-gray-800 text-white" : "gradient-primary"}`}
           size="lg"
         >
           Subscribe Now
@@ -142,18 +120,13 @@ function PlanCard({
   );
 }
 
-// ── Subscribe Flow Modal ──────────────────────────────────────────────────────
-function SubscribeModal({
-  plan,
-  onClose,
-  onSuccess,
-}: {
+function SubscribeModal({ plan, onClose, onSuccess }: {
   plan: TiffinPlan;
   onClose: () => void;
   onSuccess: () => void;
 }) {
   const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [deliveryCoords, setDeliveryCoords] = useState<{latitude: number, longitude: number} | null>(null);
+  const [deliveryCoords, setDeliveryCoords] = useState<{ latitude: number; longitude: number } | null>(null);
   const [prefs, setPrefs] = useState({
     mealType: "both" as "veg" | "non-veg" | "both",
     mealTime: "both" as "lunch" | "dinner" | "both",
@@ -165,7 +138,7 @@ function SubscribeModal({
   const { mutate: subscribe, isPending } = useMutation({
     mutationFn: (payload: SubscribePayload) => api.post("/subscriptions", payload),
     onSuccess: () => {
-      toast.success("🎉 Subscription activated! Enjoy your meals!");
+      toast.success("Subscription activated! Enjoy your meals!");
       onSuccess();
     },
     onError: (err: any) => {
@@ -187,8 +160,6 @@ function SubscribeModal({
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="bg-background rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden" onClick={e => e.stopPropagation()}>
-
-        {/* Header */}
         <div className="gradient-primary p-5 text-white">
           <div className="flex justify-between items-center">
             <div>
@@ -197,7 +168,6 @@ function SubscribeModal({
             </div>
             <button onClick={onClose} className="text-white/70 hover:text-white text-2xl leading-none">✕</button>
           </div>
-          {/* Step indicators */}
           <div className="flex gap-2 mt-4">
             {[1, 2, 3].map(s => (
               <div key={s} className={`h-1.5 flex-1 rounded-full transition-all ${step >= s ? "bg-white" : "bg-white/30"}`} />
@@ -209,12 +179,10 @@ function SubscribeModal({
         </div>
 
         <div className="p-6">
-
-          {/* Step 1: Preferences */}
+          {/* Step 1 */}
           {step === 1 && (
             <div className="space-y-5 animate-fade-in">
               <h3 className="font-bold text-lg">Your Food Preferences</h3>
-
               <div>
                 <label className="text-sm font-semibold text-muted-foreground mb-2 block">Meal Type</label>
                 <div className="grid grid-cols-3 gap-2">
@@ -226,19 +194,17 @@ function SubscribeModal({
                   ))}
                 </div>
               </div>
-
               <div>
                 <label className="text-sm font-semibold text-muted-foreground mb-2 block">Meal Time</label>
                 <div className="grid grid-cols-3 gap-2">
                   {(["lunch", "dinner", "both"] as const).map(opt => (
                     <button key={opt} onClick={() => setPrefs(p => ({ ...p, mealTime: opt }))}
                       className={`p-2.5 rounded-xl border-2 text-sm font-semibold capitalize transition-all ${prefs.mealTime === opt ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/50"}`}>
-                      {opt === "lunch" ? "☀️ Lunch" : opt === "dinner" ? "🌙 Dinner" : "🍽️ Both"}
+                      {opt === "lunch" ? "☀️ Lunch" : opt === "dinner" ? "🌙 Dinner" : "Both"}
                     </button>
                   ))}
                 </div>
               </div>
-
               <div>
                 <label className="text-sm font-semibold text-muted-foreground mb-2 block">Spice Level</label>
                 <div className="grid grid-cols-3 gap-2">
@@ -250,70 +216,56 @@ function SubscribeModal({
                   ))}
                 </div>
               </div>
-
               <div>
                 <label className="text-sm font-semibold text-muted-foreground mb-2 block">Special Requests (optional)</label>
-                <textarea value={prefs.specialRequests} onChange={e => setPrefs(p => ({ ...p, specialRequests: e.target.value.slice(0, 300) }))}
+                <textarea value={prefs.specialRequests}
+                  onChange={e => setPrefs(p => ({ ...p, specialRequests: e.target.value.slice(0, 300) }))}
                   placeholder="e.g. No onion, diabetic diet, extra rice..."
                   rows={2} className="w-full p-3 border-2 border-border rounded-xl text-sm resize-none outline-none focus:border-primary transition-colors" />
               </div>
-
-              <Button className="w-full gradient-primary" size="lg" onClick={() => setStep(2)}>
-                Continue →
-              </Button>
+              <Button className="w-full gradient-primary" size="lg" onClick={() => setStep(2)}>Continue →</Button>
             </div>
           )}
 
-          {/* Step 2: Delivery Address */}
+          {/* Step 2 */}
           {step === 2 && (
             <div className="space-y-4 animate-fade-in">
               <h3 className="font-bold text-lg">Delivery Address</h3>
-
-              <Button
-                type="button"
-                variant="outline"
+              <Button type="button" variant="outline"
                 className="w-full border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100"
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  if (!navigator.geolocation) {
-                    toast.error("Geolocation not supported");
-                    return;
-                  }
+                  if (!navigator.geolocation) { toast.error("Geolocation not supported"); return; }
                   navigator.geolocation.getCurrentPosition(
                     (pos) => {
-                      setDeliveryCoords({ 
-                        latitude: pos.coords.latitude, 
-                        longitude: pos.coords.longitude 
-                      });
-                      toast.success(`📍 Location detected! (${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)})`);
+                      setDeliveryCoords({ latitude: pos.coords.latitude, longitude: pos.coords.longitude });
+                      toast.success(`📍 Location detected!`);
                     },
                     () => toast.error("Could not detect location. Please allow location access.")
                   );
-                }}
->
-  📍 Detect My Location (for chef assignment)
-</Button>
-
-              
-
+                }}>
+                📍 Detect My Location (for chef assignment)
+              </Button>
+              {deliveryCoords && (
+                <p className="text-xs text-green-600 font-medium">
+                  ✅ Location set ({deliveryCoords.latitude.toFixed(4)}, {deliveryCoords.longitude.toFixed(4)})
+                </p>
+              )}
               {[
-                { key: "street", label: "Street Address", placeholder: "e.g. Thamel Marg, House 12" },
-                { key: "city", label: "City", placeholder: "e.g. Kathmandu" },
-                { key: "landmark", label: "Landmark (optional)", placeholder: "e.g. Near Bhatbhateni" },
-                { key: "phone", label: "Contact Phone", placeholder: "e.g. 98XXXXXXXX" },
+                { key: "street",   label: "Street Address", placeholder: "e.g. Traffic Chowk, Butwal" },
+                { key: "city",     label: "City",           placeholder: "e.g. Butwal" },
+                { key: "landmark", label: "Landmark (optional)", placeholder: "e.g. Near hospital" },
+                { key: "phone",    label: "Contact Phone",  placeholder: "e.g. 98XXXXXXXX" },
               ].map(field => (
                 <div key={field.key}>
                   <label className="text-sm font-semibold text-muted-foreground mb-1.5 block">{field.label}</label>
-                  <input
-                    value={(addr as any)[field.key]}
+                  <input value={(addr as any)[field.key]}
                     onChange={e => setAddr(a => ({ ...a, [field.key]: e.target.value }))}
                     placeholder={field.placeholder}
-                    className="w-full p-3 border-2 border-border rounded-xl text-sm outline-none focus:border-primary transition-colors"
-                  />
+                    className="w-full p-3 border-2 border-border rounded-xl text-sm outline-none focus:border-primary transition-colors" />
                 </div>
               ))}
-
               <div className="flex gap-3 pt-2">
                 <Button variant="outline" className="flex-1" onClick={() => setStep(1)}>← Back</Button>
                 <Button className="flex-1 gradient-primary" onClick={() => setStep(3)}>Continue →</Button>
@@ -321,37 +273,24 @@ function SubscribeModal({
             </div>
           )}
 
-          {/* Step 3: Confirm */}
+          {/* Step 3 */}
           {step === 3 && (
             <div className="space-y-4 animate-fade-in">
               <h3 className="font-bold text-lg">Confirm Subscription</h3>
-
-              {/* Summary */}
               <div className="bg-muted/50 rounded-xl p-4 space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Plan</span>
-                  <span className="font-bold">{plan.name}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Duration</span>
-                  <span className="font-bold">{plan.durationDays} days</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Meal Type</span>
-                  <span className="font-bold capitalize">{prefs.mealType}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Meal Time</span>
-                  <span className="font-bold capitalize">{prefs.mealTime}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Spice</span>
-                  <span className="font-bold capitalize">{prefs.spiceLevel}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Delivery to</span>
-                  <span className="font-bold text-right max-w-[60%]">{addr.street}, {addr.city}</span>
-                </div>
+                {[
+                  { label: "Plan",      val: plan.name },
+                  { label: "Duration",  val: `${plan.durationDays} days` },
+                  { label: "Meal Type", val: prefs.mealType },
+                  { label: "Meal Time", val: prefs.mealTime },
+                  { label: "Spice",     val: prefs.spiceLevel },
+                  { label: "Delivery",  val: `${addr.street}, ${addr.city}` },
+                ].map(row => (
+                  <div key={row.label} className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">{row.label}</span>
+                    <span className="font-bold capitalize text-right max-w-[60%]">{row.val}</span>
+                  </div>
+                ))}
                 <Separator />
                 <div className="flex justify-between">
                   <span className="font-bold">Total</span>
@@ -359,18 +298,16 @@ function SubscribeModal({
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Payment</span>
-                  <span className="font-bold text-green-600">💵 Cash on Delivery</span>
+                  <span className="font-bold text-green-600">Cash on Delivery</span>
                 </div>
               </div>
-
               <div className="bg-orange-50 border border-orange-200 rounded-xl p-3 text-sm text-orange-700">
-                📦 Your first delivery will start <strong>tomorrow</strong>. Our team will contact you to confirm!
+                📦 Your first delivery starts <strong>tomorrow</strong>. Our team will contact you to confirm!
               </div>
-
               <div className="flex gap-3">
                 <Button variant="outline" className="flex-1" onClick={() => setStep(2)}>← Back</Button>
                 <Button className="flex-1 gradient-primary" size="lg" onClick={handleSubmit} disabled={isPending}>
-                  {isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />Activating...</> : "✅ Confirm & Subscribe"}
+                  {isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />Activating...</> : "Confirm & Subscribe"}
                 </Button>
               </div>
             </div>
@@ -381,7 +318,6 @@ function SubscribeModal({
   );
 }
 
-// ── Main Page ─────────────────────────────────────────────────────────────────
 const MealPlans = () => {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -392,6 +328,15 @@ const MealPlans = () => {
     queryKey: ["tiffinPlans"],
     queryFn: fetchPlans,
   });
+
+  // ✅ FIX: Sort plans in correct order: Weekly → Monthly → Special Diet
+  const sortedPlans = plans
+    ? [...plans].sort((a, b) => {
+        const aIdx = PLAN_ORDER.indexOf(a.slug);
+        const bIdx = PLAN_ORDER.indexOf(b.slug);
+        return (aIdx === -1 ? 99 : aIdx) - (bIdx === -1 ? 99 : bIdx);
+      })
+    : [];
 
   const handleSelect = (plan: TiffinPlan) => {
     if (!isAuthenticated) {
@@ -405,18 +350,14 @@ const MealPlans = () => {
   return (
     <div className="min-h-screen bg-background py-16 animate-fade-in">
       <div className="container mx-auto px-4 max-w-6xl">
-
-        {/* Header */}
         <div className="text-center mb-14">
           <Badge className="bg-primary/10 text-primary border-primary/20 mb-4 text-sm px-4 py-1">
-            🍱 Tiffin Subscription
+            Tiffin Subscription
           </Badge>
           <h1 className="text-5xl font-black text-foreground mb-4">Meal Plans</h1>
           <p className="text-muted-foreground text-lg max-w-xl mx-auto">
             Choose from our flexible meal plans and enjoy delicious home-cooked food every day.
           </p>
-
-          {/* Stats */}
           <div className="flex justify-center gap-10 mt-8">
             {[
               { icon: <ChefHat className="h-5 w-5" />, label: "Home Cooks", val: "10+" },
@@ -431,23 +372,20 @@ const MealPlans = () => {
           </div>
         </div>
 
-        {/* Plans Grid */}
         {isLoading ? (
           <div className="flex justify-center h-48 items-center">
             <Loader2 className="h-10 w-10 animate-spin text-primary" />
           </div>
-        ) : !plans || plans.length === 0 ? (
+        ) : !sortedPlans.length ? (
           <div className="text-center py-16 text-muted-foreground">
             <p className="text-lg">No plans available yet.</p>
-            <p className="text-sm mt-2">Admin: POST to /api/subscriptions/admin/seed-plans to add default plans.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {plans.map(plan => <PlanCard key={plan._id} plan={plan} onSelect={handleSelect} />)}
+            {sortedPlans.map(plan => <PlanCard key={plan._id} plan={plan} onSelect={handleSelect} />)}
           </div>
         )}
 
-        {/* My Subscription CTA */}
         {isAuthenticated && (
           <div className="text-center mt-12">
             <p className="text-muted-foreground text-sm">Already subscribed?</p>
@@ -458,7 +396,6 @@ const MealPlans = () => {
         )}
       </div>
 
-      {/* Subscribe Modal */}
       {selectedPlan && (
         <SubscribeModal
           plan={selectedPlan}
@@ -474,4 +411,4 @@ const MealPlans = () => {
   );
 };
 
-export default MealPlans;  
+export default MealPlans;
