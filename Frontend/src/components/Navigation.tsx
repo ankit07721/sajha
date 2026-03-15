@@ -32,8 +32,17 @@ const Navigation = () => {
     { name: "Menu", path: "/menu" },
     { name: "Shop", path: "/shop" },
     { name: "Chefs", path: "/chefs" },
-    { name: "Meal Plans", path: "/meal-plans" },
-    { name: "Become a Chef", path: "/chef-apply" },
+
+    ...(!isAuthenticated || user?.role === "customer"
+    ? [{ name: "Meal Plans", path: "/meal-plans" }]
+    : []),
+
+    ...(!isAuthenticated || user?.role === "customer"
+    ? [{ name: "Become a Chef", path: "/chef-apply" }]
+    : []),
+
+
+   
     { name: "About", path: "/about" },
     { name: "Contact", path: "/contact" },
   ];

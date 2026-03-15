@@ -169,6 +169,14 @@ router.post('/', authenticateToken, validateOrder, async (req, res) => {
     order.calculateEstimatedDeliveryTime();
     const savedOrder = await order.save();
 
+    // Update chef's total orders count
+    if (primaryChef?.chef) {
+      await User.findByIdAndUpdate(primaryChef.chef, {
+        $inc: { 'chefProfile.totalOrders': 1 }
+      });
+      console.log(`[CHEF ORDERS] Updated totalOrders for chef ${primaryChef.chefName}`);
+    }
+
     // Clear cart
     const userCart = await Cart.findOne({ user: customer._id });
     if (userCart) { userCart.items = []; await userCart.save(); }

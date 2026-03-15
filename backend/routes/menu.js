@@ -158,7 +158,8 @@ router.post('/', authenticateToken, authorizeRole('admin','chef'), [
       return Promise.reject('Sub-category is required');
     }
 
-    const categoryExists = await MenuCategory.findOne({ slug: value });
+    const categoryExists = await MenuCategory.findOne({
+       $or: [{ slug: value }, { name: value }] });
     if (!categoryExists) {
       return Promise.reject('Invalid sub-category');
     }

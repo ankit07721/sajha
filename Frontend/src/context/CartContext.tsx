@@ -108,6 +108,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   });
 
   const addToCart = (item: { menuItemId: string; quantity: number }) => {
+    if (user?.role === 'chef' || user?.role === 'admin') {
+    toast.error("Chefs and admins cannot place orders!");
+    return;
+  }
     const existingItem = cart?.items.find(
       (i) => i.menuItem._id === item.menuItemId
     );
@@ -126,6 +130,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updateCartItem = (item: { menuItemId: string; quantity: number }) => {
+    if (user?.role === 'chef' || user?.role === 'admin') return;
     cartUpdateMutation.mutate(item);
   };
 
