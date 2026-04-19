@@ -6,8 +6,7 @@ const morgan = require("morgan");
 const rateLimit = require("express-rate-limit");
 const mongoose = require("mongoose");
 const connectDB = require("./config/mongo.config.js");
-const Subscription = require('./models/Subscription');
-
+const Subscription = require("./models/Subscription");
 
 require("dotenv").config();
 
@@ -17,8 +16,8 @@ const missingEnv = requiredEnv.filter((envVar) => !process.env[envVar]);
 if (missingEnv.length > 0) {
   console.error(
     `FATAL ERROR: Missing required environment variables: ${missingEnv.join(
-      ", "
-    )}`
+      ", ",
+    )}`,
   );
   process.exit(1); // Exit if critical variables are not set
 }
@@ -45,9 +44,11 @@ app.use("/api/", limiter);
 // CORS configuration
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || "http://localhost:3000",
+    origin:
+      process.env.CORS_ORIGIN ||
+      "https://sajha-wnfm-qjqo1jwlh-ankit07721s-projects.vercel.app/",
     credentials: true,
-  })
+  }),
 );
 
 // Body parsing middleware - Note: express.json() is already called above,
@@ -77,7 +78,6 @@ app.use("/api/chef", require("./routes/chefRoutes"));
 app.use("/api/subscriptions", require("./routes/subscription"));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/api/upload", require("./routes/upload"));
-
 
 // Health check endpoint
 app.get("/api/health", (req, res) => {
@@ -112,19 +112,19 @@ const PORT = process.env.PORT || 5000;
 const startServer = async () => {
   await connectDB();
   app.listen(PORT, () => {
-    console.log(`Server running on port http://localhost:${PORT}`);
+    console.log(`Server running `);
     console.log(`Environment: ${process.env.NODE_ENV}`);
   });
 
   const expired = await Subscription.expireOverdue();
-  if (expired > 0) console.log(`[STARTUP] Expired ${expired} overdue subscriptions`);
+  if (expired > 0)
+    console.log(`[STARTUP] Expired ${expired} overdue subscriptions`);
 
   // Run every hour
   setInterval(async () => {
     await Subscription.expireOverdue();
   }, 3600000);
 };
-
 
 startServer();
 
