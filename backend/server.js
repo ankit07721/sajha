@@ -44,9 +44,7 @@ app.use("/api/", limiter);
 // CORS configuration
 app.use(
   cors({
-    origin:
-      process.env.CORS_ORIGIN ||
-      "https://sajha-wnfm-qjqo1jwlh-ankit07721s-projects.vercel.app/",
+    origin: process.env.CORS_ORIGIN || "https://sajha-wnfm.vercel.app/",
     credentials: true,
   }),
 );
